@@ -1,0 +1,14 @@
+
+services:
+  rag:
+    build: .
+    container_name: rag-financial
+    volumes:
+      - ./data:/app/data
+      - ./indices:/app/indices
+      - ./src:/app/src
+      - ./figures:/app/figures
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true

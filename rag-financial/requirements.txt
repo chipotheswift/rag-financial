@@ -1,0 +1,32 @@
+# Core framework
+langchain==0.2.16
+langchain-community==0.2.16
+langchain-openai==0.1.23
+
+# Vector store
+faiss-cpu==1.8.0
+
+# Embeddings (local model for semantic chunking)
+sentence-transformers==3.0.1
+
+# OpenAI
+openai==1.43.0
+
+# Evaluation
+ragas==0.1.21
+
+# HuggingFace datasets
+datasets==2.21.0
+huggingface-hub==0.24.6
+
+# Experiment tracking
+wandb==0.17.8
+
+# Data + viz
+pandas==2.2.2
+matplotlib==3.9.2
+numpy==1.26.4
+
+# Utilities
+python-dotenv==1.0.1
+tqdm==4.66.5
