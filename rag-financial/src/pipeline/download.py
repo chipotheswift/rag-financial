@@ -1,99 +1,85 @@
 import os
-from datasets import load_dataset
+import json
+from huggingface_hub import hf_hub_download
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# how many filings to sample for validation
 SAMPLE_SIZE = 5
 
-# these are the 20 structured sections EDGAR-CORPUS splits every 10-K into
 EXPECTED_SECTIONS = [
-    "section_1",   # Business Overview
-    "section_1A",  # Risk Factors
-    "section_1B",  # Unresolved Staff Comments
-    "section_2",   # Properties
-    "section_3",   # Legal Proceedings
-    "section_4",   # Mine Safety
-    "section_5",   # Market for Registrant
-    "section_6",   # Selected Financial Data
-    "section_7",   # MD&A
-    "section_7A",  # Quantitative Disclosures
-    "section_8",   # Financial Statements
-    "section_9",   # Changes in Accountants
-    "section_9A",  # Controls and Procedures
-    "section_9B",  # Other Information
-    "section_10",  # Directors and Officers
-    "section_11",  # Executive Compensation
-    "section_12",  # Security Ownership
-    "section_13",  # Certain Relationships
-    "section_14",  # Principal Accountant Fees
-    "section_15",  # Exhibits
+    "section_1", "section_1A", "section_1B", "section_2",
+    "section_3", "section_4", "section_5", "section_6",
+    "section_7", "section_7A", "section_8", "section_9",
+    "section_9A", "section_9B", "section_10", "section_11",
+    "section_12", "section_13", "section_14", "section_15",
 ]
 
 
 def download_and_validate():
-    print("connecting to EDGAR-CORPUS via streaming...")
-    print("(no data downloaded yet — stream opens on first iteration)\n")
+    print("downloading 2018/train.jsonl from EDGAR-CORPUS...")
+    print("(one year subset — used for validation only)\n")
 
-    # streaming=True is the key — nothing hits disk until we iterate
-    dataset = load_dataset(
-        "eloukas/edgar-corpus",
-        split="train",
-        streaming=True,
-        trust_remote_code=True,
+    # download just one year's training split directly as a file
+    # jsonl = JSON Lines — one filing per line, easy to stream
+    local_path = hf_hub_download(
+        repo_id="eloukas/edgar-corpus",
+        filename="2018/train.jsonl",
+        repo_type="dataset",
     )
-
-    print(f"sampling {SAMPLE_SIZE} filings for validation...\n")
+    print(f"file cached at: {local_path}\n")
 
     issues = []
+    count = 0
 
-    # dataset is now a generator — each call to next() fetches one filing
-    for i, filing in enumerate(dataset):
-        if i >= SAMPLE_SIZE:
-            break
+    # open the file and read one line at a time
+    # each line is one complete filing as a JSON object
+    # this is streaming — we never load the whole file into memory
+    with open(local_path, "r", encoding="utf-8") as f:
+        for line in f:
+            if count >= SAMPLE_SIZE:
+                break
 
-        # pull identifying info
-        company = filing.get("company", "unknown")
-        year = filing.get("year", "unknown")
-        filename = filing.get("filename", "unknown")
+            # parse the line from JSON string into a Python dict
+            filing = json.loads(line.strip())
+            count += 1
 
-        print(f"filing {i+1}: {company} — {year}")
-        print(f"  filename : {filename}")
+            company = filing.get("company", "unknown")
+            year = filing.get("year", "unknown")
+            filename = filing.get("filename", "unknown")
 
-        # check every expected section exists and has content
-        missing = []
-        empty = []
+            print(f"filing {count}: {company} — {year}")
+            print(f"  filename : {filename}")
 
-        for section in EXPECTED_SECTIONS:
-            if section not in filing:
-                missing.append(section)
-            elif not filing[section] or len(filing[section].strip()) == 0:
-                empty.append(section)
+            missing = []
+            empty = []
 
-        if missing:
-            print(f"  MISSING sections : {missing}")
-            issues.append((filename, "missing", missing))
-        if empty:
-            # empty sections are common — some companies skip optional sections
-            print(f"  empty sections   : {empty}")
-        if not missing:
-            print(f"  all 20 sections present ✓")
+            for section in EXPECTED_SECTIONS:
+                if section not in filing:
+                    missing.append(section)
+                elif not filing[section] or len(str(filing[section]).strip()) == 0:
+                    empty.append(section)
 
-        # show a snippet of Risk Factors so you can see what raw text looks like
-        risk = filing.get("section_1A", "")
-        snippet = risk[:300].replace("\n", " ").strip()
-        print(f"  section_1A snippet: {snippet}...\n")
+            if missing:
+                print(f"  MISSING sections : {missing}")
+                issues.append((filename, "missing", missing))
+            if empty:
+                print(f"  empty sections   : {empty}")
+            if not missing:
+                print(f"  all 20 sections present ✓")
 
-    # summary
+            # print a snippet of risk factors so we can see raw text
+            risk = str(filing.get("section_1A", ""))
+            snippet = risk[:300].replace("\n", " ").strip()
+            print(f"  section_1A snippet: {snippet}...\n")
+
     print("=" * 60)
     if not issues:
-        print(f"validation passed — all {SAMPLE_SIZE} filings look clean")
-        print("EDGAR-CORPUS is loading correctly via stream")
+        print(f"validation passed — all {count} filings look clean")
     else:
-        print(f"validation found issues in {len(issues)} filings — check above")
+        print(f"validation found issues in {len(issues)} filings")
 
-    print("\ndone. no data written to disk — this was stream-only.")
+    print("\ndone. file cached locally by huggingface_hub.")
 
 
 if __name__ == "__main__":
