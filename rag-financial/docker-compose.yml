@@ -2,6 +2,8 @@ services:
   rag:
     build: .
     container_name: rag-financial
+    ports:
+      - "8000:8000"
     volumes:
       - ./data:/app/data
       - ./indices:/app/indices
