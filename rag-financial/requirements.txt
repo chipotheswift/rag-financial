@@ -20,7 +20,7 @@ datasets==2.19.2
 huggingface-hub==0.24.6
 
 # Experiment tracking
-wandb==0.17.8
+wandb==0.25.1
 
 # Data + viz
 pandas==2.2.2
