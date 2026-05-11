@@ -388,10 +388,11 @@ BENCHMARK = [
     # Tests low-confidence detector and hallucination resistance
     # ================================================================
 
+    
     {
         "id": "T3_001",
         "tier": 3,
-        "question": "What was the exact revenue figure for Arcimoto in fiscal year 2018?",
+        "question": "What was Arcimoto's market share in the electric vehicle segment in 2018?",
         "ground_truth": "The provided filings do not contain sufficient information to answer this question.",
         "filename": "1558583_2018.htm",
         "section": "section_7",
@@ -431,7 +432,7 @@ BENCHMARK = [
     {
         "id": "T3_005",
         "tier": 3,
-        "question": "What was MJ Holdings net profit margin in 2018?",
+        "question": "What was MJ Holdings projected revenue for fiscal year 2019?",
         "ground_truth": "The provided filings do not contain sufficient information to answer this question.",
         "filename": "1456857_2018.htm",
         "section": "section_7",

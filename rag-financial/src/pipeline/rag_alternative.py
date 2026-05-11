@@ -17,11 +17,11 @@ INDEX_DIR = "/app/indices"
 
 # similarity score threshold — below this we consider the query
 # unanswerable from the available context
-CONFIDENCE_THRESHOLD = 0.40
+CONFIDENCE_THRESHOLD = 0.30
 
 # gap threshold — if top-1 and top-2 scores are this close together
 # the retriever isn't confident about any single best chunk
-GAP_THRESHOLD = 0.02
+GAP_THRESHOLD = 0.05
 
 # section routing — maps question keywords to likely sections
 # used for metadata filtering
@@ -59,20 +59,25 @@ def load_cross_encoder() -> CrossEncoder:
     return model
 
 
+# keywords that suggest cross-section questions — disable filtering
+CROSS_SECTION_KEYWORDS = [
+    "and what", "relate to", "connect", "both", "also",
+    "how does", "what do", "which companies", "compare"
+]
+
+
 def detect_target_section(question: str) -> str | None:
-    """
-    Attempts to route the question to the most likely section.
-    Returns a section name if confident, None if ambiguous.
-    Uses simple keyword matching — in production you'd use
-    an LLM classifier but this is sufficient for research purposes.
-    """
     question_lower = question.lower()
+
+    # disable filtering for cross-section questions
+    for keyword in CROSS_SECTION_KEYWORDS:
+        if keyword in question_lower:
+            return None
 
     for keyword, section in SECTION_ROUTING.items():
         if keyword in question_lower:
             return section
 
-    # no clear match — search all sections
     return None
 
 
