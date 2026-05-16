@@ -20,6 +20,7 @@ class QueryRequest(BaseModel):
     strategy: str = "fixed"
     top_k: int = 5
     use_alternative: bool = False
+    top_k_retrieval: int = 20  # ← new field for ablation
 
 
 class QueryResponse(BaseModel):
@@ -41,10 +42,8 @@ async def lifespan(app: FastAPI):
     app.state.fixed_index, app.state.fixed_chunks = load_index("fixed")
     app.state.semantic_index, app.state.semantic_chunks = load_index("semantic")
     app.state.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
     print("loading cross-encoder...")
     app.state.cross_encoder = load_cross_encoder()
-
     print("all models loaded — server ready")
     yield
     print("shutting down")
@@ -85,6 +84,7 @@ def query(request: QueryRequest):
             chunks=chunks,
             client=app.state.client,
             cross_encoder=app.state.cross_encoder,
+            top_k_retrieval=request.top_k_retrieval,  # ← passed through
         )
     else:
         result = run_query(
