@@ -48,7 +48,7 @@ def download_and_validate():
             year = filing.get("year", "unknown")
             filename = filing.get("filename", "unknown")
 
-            print(f"filing {count}: {company} — {year}")
+            print(f"filing {count}: {company} - {year}")
             print(f"  filename : {filename}")
 
             missing = []
@@ -75,7 +75,7 @@ def download_and_validate():
 
     print("=" * 60)
     if not issues:
-        print(f"validation passed — all {count} filings look clean")
+        print(f"validation passed - all {count} filings look clean")
     else:
         print(f"validation found issues in {len(issues)} filings")
 
