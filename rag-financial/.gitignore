@@ -1,0 +1,8 @@
+.env
+data/
+indices/
+__pycache__/
+*.pyc
+.DS_Store
+wandb/
+figures/

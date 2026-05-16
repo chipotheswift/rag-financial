@@ -1,0 +1,16 @@
+services:
+  rag:
+    build: .
+    container_name: rag-financial
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./indices:/app/indices
+      - ./src:/app/src
+      - ./figures:/app/figures
+      - ./data/hf-cache:/root/.cache/huggingface
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
